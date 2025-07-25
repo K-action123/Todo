@@ -1,0 +1,46 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: Install Dependencies
+      run: |
+        cd backend && npm install
+        cd ../frontend && npm install
+
+    - name: Build Docker images
+      run: docker-compose build
+
+    - name: Run Docker containers
+      run: |
+        docker-compose up -d
+        sleep 30  # Wait for containers to be ready
+
+    - name: Check running containers
+      run: docker ps
+
+    - name: Run backend tests
+      run: |
+        cd backend
+        npm test
+
+    - name: Run frontend tests
+      run: |
+        cd frontend
+        npm test
