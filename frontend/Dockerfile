@@ -1,8 +1,10 @@
 FROM node:18-alpine AS build
 WORKDIR /app
+RUN apk add --no-cache python3 make g++
 COPY package*.json ./
 RUN npm ci && npm cache clean --force
 COPY . .
+RUN npm test
 RUN npm run build
 FROM nginx:alpine
 
