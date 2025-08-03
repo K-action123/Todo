@@ -11,13 +11,6 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-mongoose.connect(process.env.MONGO_URI)
-    .then(() => console.log('MongoDB connected successfully!'))
-    .catch(err => {
-        console.error('MongoDB connection error:', err);
-        process.exit(1);
-    });
-
 // --- API ROUTES ---
 
 // Health check endpoint for Docker (ALREADY PRESENT - GOOD!)
@@ -135,8 +128,20 @@ app.delete('/api/todos/:id', async (req, res) => {
     }
 });
 
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-    console.log(`Access backend at http://localhost:${PORT}/api/todos`);
-    console.log(`Health check at http://localhost:${PORT}/health`);
-});
+if (require.main === module) {
+    mongoose.connect(process.env.MONGO_URI)
+        .then(() => {
+            console.log('MongoDB connected successfully');
+            app.listen(PORT, () => {
+                console.log(`Server running on port ${PORT}`);
+                console.log(`Access backend at http://localhost:${PORT}/api/todos`);
+                console.log(`Health check at http://localhost:${PORT}/health`);
+            });
+        })
+        .catch(err => {
+            console.error('MongoDB connection error:', err);
+            process.exit(1);
+        });
+}
+
+module.exports= app;

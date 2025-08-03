@@ -6,7 +6,7 @@ COPY package*.json ./
 RUN npm ci && npm cache clean --force
 
 COPY . .
-RUN npm test
+# removed run npm test we don't test while building backend
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S nodejs -u 1001
 
