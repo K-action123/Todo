@@ -3,6 +3,8 @@ WORKDIR /app
 RUN apk add --no-cache python3 make g++
 COPY package*.json ./
 RUN npm ci && npm cache clean --force
+
+ENV PATH /app/node_modules/.bin:$PATH
 COPY . .
 RUN npm test
 RUN npm run build
