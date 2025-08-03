@@ -28,16 +28,18 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y docker-compose
 
-    - name: Build and test
-      run: |
-        docker-compose build
-        docker-compose up -d
-        sleep 30
+    - name: Build and start services, then wait for health
+      run: docker-compose up --build --wait -d
 
     - name: Check running containers
       run: docker ps -a
 
     - name: Run tests
       run: |
-        docker-compose exec -T frontend npm test
-        docker-compose exec -T backend npm test
+        # Use --user root to fix the "npm not found" error
+        docker-compose exec -T --user root frontend npm test
+        docker-compose exec -T --user root backend npm test
+        
+    - name: Cleanup
+      if: always()
+      run: docker-compose down
