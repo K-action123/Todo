@@ -119,7 +119,7 @@ app.delete('/api/todos/:id', async (req, res) => {
         }
         res.json({ message: 'Todo deleted successfully!' });
     } catch (err) {
-        console.error(`Error deleting todo with ID ${id}:`, err);
+        console.error('Error deleting todo with ID %s:', id, err);
         if (err.name === 'CastError') {
             return res.status(400).json({ message: 'Invalid Todo ID format.' });
         }
