@@ -2,6 +2,8 @@
 const request = require('supertest');
 const mongoose = require('mongoose');
 const app = require('../server');
+const Todo = require('../models/Todo');  // ✅ ADD THIS LINE!
+
 
 beforeAll(async () => {
   const url = process.env.MONGO_URI || 'mongodb://localhost:27017/test';
