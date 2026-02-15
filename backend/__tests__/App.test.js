@@ -1,9 +1,7 @@
-
 const request = require('supertest');
 const mongoose = require('mongoose');
 const app = require('../server');
-const Todo = require('../models/Todo');  // ✅ ADD THIS LINE!
-
+const Todo = require('../models/Todo');
 
 beforeAll(async () => {
   const url = process.env.MONGO_URI || 'mongodb://localhost:27017/test';
@@ -13,6 +11,7 @@ beforeAll(async () => {
 afterAll(async () => {
   await mongoose.connection.close();
 });
+
 // Clean up database before each test
 beforeEach(async () => {
   await Todo.deleteMany({});
@@ -29,10 +28,10 @@ describe('App Tests', () => {
   test('POST /api/todos/ should create a todo', async () => {
     const todo = {
       task: 'Test Todo',
-      description:   'Test description',
+      description: 'Test description',
       subtasks: [
-        {subtaskText: 'subtask 1', isCompleted: false},
-        {subtaskText: 'subtask 2', isCompleted: false},
+        { subtaskText: 'subtask 1', isCompleted: false },
+        { subtaskText: 'subtask 2', isCompleted: false },
       ]
     };
 
@@ -50,7 +49,8 @@ describe('App Tests', () => {
     expect(response.body).toHaveProperty('_id');
     expect(response.body).toHaveProperty('createdAt');    
   });
- test('POST /api/todos/ should fail without task', async () => {
+
+  test('POST /api/todos/ should fail without task', async () => {
     const todo = {
       description: 'Test description'
       // Missing "task" field
@@ -63,6 +63,7 @@ describe('App Tests', () => {
 
     expect(response.body.message).toBe('Task is required.');
   });
+
   test('PATCH /api/todos/:id should update a todo', async () => {
     // First create a todo
     const todo = new Todo({
@@ -85,7 +86,8 @@ describe('App Tests', () => {
     expect(response.body.task).toBe('Updated Task');
     expect(response.body.completed).toBe(true);
   });
-test('DELETE /api/todos/:id should delete a todo', async () => {
+
+  test('DELETE /api/todos/:id should delete a todo', async () => {
     // First create a todo
     const todo = new Todo({
       task: 'Todo to delete'

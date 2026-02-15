@@ -56,10 +56,14 @@ app.post('/api/todos', async (req, res) => {
     const newTodo = new Todo({
         task: task.trim(),
         description: description ? description.trim() : '',
-        subtasks: subtasks && Array.isArray(subtasks) ? subtasks.map(sub => ({
-            subtaskText: sub.subtaskText ? sub.subtaskText.trim() : '',
-            isCompleted: sub.isCompleted || false
-        })) : []
+        subtasks: subtasks && Array.isArray(subtasks) 
+            ? subtasks
+                .filter(sub => sub.subtaskText && sub.subtaskText.trim() !== '')  // ← ADD THIS LINE
+                .map(sub => ({
+                    subtaskText: sub.subtaskText.trim(),
+                    isCompleted: sub.isCompleted || false
+                }))
+            : []
     });
 
     try {
@@ -98,10 +102,12 @@ app.patch('/api/todos/:id', async (req, res) => {
         }
         if (subtasks !== undefined) {
             if (Array.isArray(subtasks)) {
-                todo.subtasks = subtasks.map(sub => ({
-                    subtaskText: sub.subtaskText ? sub.subtaskText.trim() : '',
-                    isCompleted: sub.isCompleted || false,
-                }));
+                todo.subtasks = subtasks
+                    .filter(sub => sub.subtaskText && sub.subtaskText.trim() !== '')  // ← ADD THIS LINE
+                    .map(sub => ({
+                        subtaskText: sub.subtaskText.trim(),
+                        isCompleted: sub.isCompleted || false,
+                    }));
             } else {
                 return res.status(400).json({ message: 'Subtasks must be an array.' });
             }
@@ -117,7 +123,6 @@ app.patch('/api/todos/:id', async (req, res) => {
         res.status(500).json({ message: 'Server Error: Could not update todo.' });
     }
 });
-
 // 4. Delete todo
 app.delete('/api/todos/:id', async (req, res) => {
     const { id } = req.params;
