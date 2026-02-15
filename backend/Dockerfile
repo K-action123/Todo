@@ -8,7 +8,7 @@ RUN npm ci && npm cache clean --force
 ENV PATH /app/node_modules/.bin:$PATH
 COPY . .
 # removed run npm test we don't test while building backend
-
+RUN npm test
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S nodejs -u 1001
 
