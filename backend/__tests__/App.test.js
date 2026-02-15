@@ -31,8 +31,8 @@ describe('App Tests', () => {
       task: 'Test Todo',
       description:   'Test description',
       subtasks: [
-        {subtasksText: 'subtask 1', isCompleted: false},
-        {subtasksText: 'subtask 2', isCompleted: false},
+        {subtaskText: 'subtask 1', isCompleted: false},
+        {subtaskText: 'subtask 2', isCompleted: false},
       ]
     };
 
@@ -46,7 +46,7 @@ describe('App Tests', () => {
     expect(response.body.description).toBe(todo.description);
     expect(response.body.completed).toBe(false);
     expect(response.body.subtasks).toHaveLength(2);
-    expect(response.body.subtasks[0].subtaskText).toBe('Subtask 1');
+    expect(response.body.subtasks[0].subtaskText).toBe('subtask 1');
     expect(response.body).toHaveProperty('_id');
     expect(response.body).toHaveProperty('createdAt');    
   });
