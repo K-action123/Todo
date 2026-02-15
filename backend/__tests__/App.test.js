@@ -11,6 +11,10 @@ beforeAll(async () => {
 afterAll(async () => {
   await mongoose.connection.close();
 });
+// Clean up database before each test
+beforeEach(async () => {
+  await Todo.deleteMany({});
+});
 
 describe('App Tests', () => {
   test('GET /api/todos/ should return todos', async () => {
@@ -22,8 +26,12 @@ describe('App Tests', () => {
 
   test('POST /api/todos/ should create a todo', async () => {
     const todo = {
-      title: 'Test Todo',
-      completed: false
+      task: 'Test Todo',
+      description:   'Test description',
+      subtasks: [
+        {subtasksText: 'subtask 1', isCompleted: false},
+        {subtasksText: 'subtask 2', isCompleted: false},
+      ]
     };
 
     const response = await request(app)
@@ -31,6 +39,64 @@ describe('App Tests', () => {
       .send(todo)
       .expect(201);
 
-    expect(response.body.title).toBe(todo.title);
+    // ✅ Check correct fields from schema
+    expect(response.body.task).toBe(todo.task);
+    expect(response.body.description).toBe(todo.description);
+    expect(response.body.completed).toBe(false);
+    expect(response.body.subtasks).toHaveLength(2);
+    expect(response.body.subtasks[0].subtaskText).toBe('Subtask 1');
+    expect(response.body).toHaveProperty('_id');
+    expect(response.body).toHaveProperty('createdAt');    
   });
+ test('POST /api/todos/ should fail without task', async () => {
+    const todo = {
+      description: 'Test description'
+      // Missing "task" field
+    };
+
+    const response = await request(app)
+      .post('/api/todos')
+      .send(todo)
+      .expect(400);
+
+    expect(response.body.message).toBe('Task is required.');
+  });
+  test('PATCH /api/todos/:id should update a todo', async () => {
+    // First create a todo
+    const todo = new Todo({
+      task: 'Original Task',
+      description: 'Original description'
+    });
+    await todo.save();
+
+    // Update it
+    const updates = {
+      task: 'Updated Task',
+      completed: true
+    };
+
+    const response = await request(app)
+      .patch(`/api/todos/${todo._id}`)
+      .send(updates)
+      .expect(200);
+
+    expect(response.body.task).toBe('Updated Task');
+    expect(response.body.completed).toBe(true);
+  });
+test('DELETE /api/todos/:id should delete a todo', async () => {
+    // First create a todo
+    const todo = new Todo({
+      task: 'Todo to delete'
+    });
+    await todo.save();
+
+    // Delete it
+    await request(app)
+      .delete(`/api/todos/${todo._id}`)
+      .expect(200);
+
+    // Verify it's gone
+    const deletedTodo = await Todo.findById(todo._id);
+    expect(deletedTodo).toBeNull();
+  });  
 });
