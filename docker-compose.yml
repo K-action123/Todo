@@ -25,6 +25,7 @@ services:
     build: 
       context: ./backend
       dockerfile: Dockerfile
+    image: hoodk123/todo-backend:latest
     container_name: todo_backend
     environment:
       - MONGO_URI=mongodb://HOODK:NotAllowed@mongo:27017/TodoDB?authSource=admin
@@ -51,6 +52,7 @@ services:
     build: 
       context: ./frontend
       dockerfile: Dockerfile
+    image: hoodk123/todo-frontend:latest
     container_name: todo_frontend
     ports:
       - "80:80"
