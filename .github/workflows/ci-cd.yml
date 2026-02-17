@@ -22,8 +22,6 @@ jobs:
         uses: trufflesecurity/trufflehog@main
         with:
           path: ./
-          base: ${{ github.event.repository.default_branch }}
-          head: HEAD
           extra_args: --only-verified
 
   build-and-test:
@@ -97,3 +95,7 @@ jobs:
     - name: Cleanup
       if: always()
       run: docker compose down -v
+
+# removed `base/head`  Fixes:
+# We tried first to set things manual while trufflehog handle things itself
+# based on Github event type (push/pull_request)
