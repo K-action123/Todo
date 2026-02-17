@@ -12,53 +12,57 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-// Apply rate limiting to API routes to protect database operations
 const apiLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // limit each IP to 100 requests per windowMs for /api routes
-    standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-    legacyHeaders: false,  // Disable the `X-RateLimit-*` headers
+    windowMs: 15 * 60 * 1000,
+    max: 100,
+    standardHeaders: true,
+    legacyHeaders: false,
 });
 
 app.use('/api', apiLimiter);
 
-// --- API ROUTES ---
-
-// Health check endpoint for Docker (ALREADY PRESENT - GOOD!)
+// ── Health check ─────────────────────────────
 app.get('/health', (req, res) => {
-    res.status(200).json({ 
-        status: 'OK', 
+    res.status(200).json({
+        status: 'OK',
         timestamp: new Date().toISOString(),
         service: 'todo-backend',
         database: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected'
     });
 });
 
-// 1. Get All todos
+// ── 1. Get all todos ──────────────────────────
 app.get('/api/todos', async (req, res) => {
     try {
         const todos = await Todo.find().sort({ createdAt: -1 });
         res.json(todos);
     } catch (err) {
-        console.error("Error fetching todos: ", err);
+        console.error("Error fetching todos:", err);
         res.status(500).json({ message: 'Server Error: could not fetch todos.' });
     }
 });
 
-// 2. Create new todo
+// ── 2. Create new todo ────────────────────────
 app.post('/api/todos', async (req, res) => {
-    const { task, description, subtasks } = req.body;
+    const { task, description, subtasks, priority } = req.body; // ✅ Added priority
 
     if (!task || task.trim() === '') {
         return res.status(400).json({ message: 'Task is required.' });
     }
 
+    // ✅ Validate priority if provided
+    const validPriorities = ['low', 'medium', 'high'];
+    if (priority && !validPriorities.includes(priority)) {
+        return res.status(400).json({ message: 'Invalid priority. Must be low, medium, or high.' });
+    }
+
     const newTodo = new Todo({
         task: task.trim(),
         description: description ? description.trim() : '',
-        subtasks: subtasks && Array.isArray(subtasks) 
+        priority: priority || 'medium',                         // ✅ Use provided or default
+        subtasks: subtasks && Array.isArray(subtasks)
             ? subtasks
-                .filter(sub => sub.subtaskText && sub.subtaskText.trim() !== '')  // ← ADD THIS LINE
+                .filter(sub => sub.subtaskText && sub.subtaskText.trim() !== '')
                 .map(sub => ({
                     subtaskText: sub.subtaskText.trim(),
                     isCompleted: sub.isCompleted || false
@@ -75,35 +79,38 @@ app.post('/api/todos', async (req, res) => {
     }
 });
 
-// 3. Update todo
+// ── 3. Update todo ────────────────────────────
 app.patch('/api/todos/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        const { task, completed, description, subtasks } = req.body;
+        const { task, completed, description, subtasks, priority } = req.body; // ✅ Added priority
 
         if (!mongoose.Types.ObjectId.isValid(id)) {
             return res.status(400).json({ message: 'Invalid Todo ID.' });
         }
 
         const todo = await Todo.findById(id);
-
         if (!todo) {
             return res.status(404).json({ message: 'Todo not found.' });
         }
 
-        if (task !== undefined) {
-            todo.task = task.trim();
+        if (task !== undefined)        todo.task = task.trim();
+        if (completed !== undefined)   todo.completed = completed;
+        if (description !== undefined) todo.description = description.trim();
+
+        // ✅ Handle priority update
+        if (priority !== undefined) {
+            const validPriorities = ['low', 'medium', 'high'];
+            if (!validPriorities.includes(priority)) {
+                return res.status(400).json({ message: 'Invalid priority. Must be low, medium, or high.' });
+            }
+            todo.priority = priority;
         }
-        if (completed !== undefined) {
-            todo.completed = completed;
-        }
-        if (description !== undefined) {
-            todo.description = description.trim();
-        }
+
         if (subtasks !== undefined) {
             if (Array.isArray(subtasks)) {
                 todo.subtasks = subtasks
-                    .filter(sub => sub.subtaskText && sub.subtaskText.trim() !== '')  // ← ADD THIS LINE
+                    .filter(sub => sub.subtaskText && sub.subtaskText.trim() !== '')
                     .map(sub => ({
                         subtaskText: sub.subtaskText.trim(),
                         isCompleted: sub.isCompleted || false,
@@ -116,20 +123,19 @@ app.patch('/api/todos/:id', async (req, res) => {
         const updatedTodo = await todo.save();
         res.status(200).json(updatedTodo);
     } catch (err) {
-        console.error(`Error updating todo with ID ${id}:`, err);
+        console.error(`Error updating todo with ID ${req.params.id}:`, err);
         if (err.name === 'CastError') {
             return res.status(400).json({ message: 'Invalid Todo ID format.' });
         }
         res.status(500).json({ message: 'Server Error: Could not update todo.' });
     }
 });
-// 4. Delete todo
+
+// ── 4. Delete todo ────────────────────────────
 app.delete('/api/todos/:id', async (req, res) => {
     const { id } = req.params;
-
     try {
         const result = await Todo.deleteOne({ _id: id });
-
         if (result.deletedCount === 0) {
             return res.status(404).json({ message: 'Todo not found.' });
         }
@@ -139,19 +145,19 @@ app.delete('/api/todos/:id', async (req, res) => {
         if (err.name === 'CastError') {
             return res.status(400).json({ message: 'Invalid Todo ID format.' });
         }
-        // FIXED: was res.result(500), should be res.status(500)
         res.status(500).json({ message: 'Server Error: Could not delete todo.' });
     }
 });
 
+// ── Start server ──────────────────────────────
 if (require.main === module) {
     mongoose.connect(process.env.MONGO_URI)
         .then(() => {
             console.log('MongoDB connected successfully');
             app.listen(PORT, () => {
                 console.log(`Server running on port ${PORT}`);
-                console.log(`Access backend at http://localhost:${PORT}/api/todos`);
-                console.log(`Health check at http://localhost:${PORT}/health`);
+                console.log(`Backend: http://localhost:${PORT}/api/todos`);
+                console.log(`Health:  http://localhost:${PORT}/health`);
             });
         })
         .catch(err => {
@@ -160,4 +166,4 @@ if (require.main === module) {
         });
 }
 
-module.exports= app;
+module.exports = app;

@@ -1,24 +1,29 @@
-// src/api/todoApi.js
-import axios from 'axios';
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
-const API_URL = 'http://localhost:5000/api/todos';
-
-export const fetchTodos = async () => {
-    const response = await axios.get(API_URL);
-    return response.data;
+const handleResponse = async (res) => {
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || 'Request failed');
+  return data;
 };
 
-export const createTodo = async (todoData) => {
-    const response = await axios.post(API_URL, todoData);
-    return response.data;
-};
+export const todoApi = {
+  getAll: () =>
+    fetch(`${API_URL}/todos`).then(handleResponse),
 
-export const updateTodo = async (id, updateData) => {
-    const response = await axios.patch(`${API_URL}/${id}`, updateData);
-    return response.data;
-};
+  create: (payload) =>
+    fetch(`${API_URL}/todos`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    }).then(handleResponse),
 
-export const deleteTodo = async (id) => {
-    await axios.delete(`${API_URL}/${id}`);
-    return id; // Return the ID of the deleted todo
+  update: (id, payload) =>
+    fetch(`${API_URL}/todos/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    }).then(handleResponse),
+
+  delete: (id) =>
+    fetch(`${API_URL}/todos/${id}`, { method: 'DELETE' }).then(handleResponse),
 };

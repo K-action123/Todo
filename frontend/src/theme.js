@@ -1,118 +1,52 @@
-import { createTheme } from '@mui/material/styles';
+// Stormy Morning Color Palette
+// #6A89A7 - Steel Blue (primary)
+// #BDDDFC - Light Sky (soft bg accents)
+// #88BDF2 - Cornflower Blue (interactive)
+// #384959 - Deep Navy (text/dark)
 
-const theme = createTheme({
-    palette: {
-        primary: {
-            main: '#1976d2', // A pleasant blue
-            light: '#42a5f5',
-            dark: '#1565c0',
-            contrastText: '#fff',
-        },
-        secondary: {
-            main: '#dc004e', // A vibrant red for contrast
-            light: '#e33371',
-            dark: '#9a0036',
-            contrastText: '#fff',
-        },
-        background: {
-            default: '#e0f2f7', // A very light, calming blue-grey
-            paper: '#ffffff', // White for cards and lists
-        },
-        text: {
-            primary: '#333333', // Dark grey for general text
-            secondary: '#666666', // Lighter grey for secondary text
-        },
-    },
-    typography: {
-        fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
-        h4: {
-            fontWeight: 700, // Make headings bolder
-            fontSize: '2.125rem',
-            lineHeight: 1.235,
-            letterSpacing: '0.00735em',
-        },
-        h5: {
-            fontWeight: 600,
-            fontSize: '1.5rem',
-        },
-        body1: {
-            fontSize: '1rem',
-        },
-    },
-    spacing: 8, // Default spacing unit in pixels (8px)
+export const theme = {
+  colors: {
+    // Core palette
+    steel:      '#6A89A7',
+    sky:        '#BDDDFC',
+    cornflower: '#88BDF2',
+    navy:       '#384959',
 
-    components: {
-        MuiButton: {
-            styleOverrides: {
-                root: {
-                    borderRadius: 20, // More rounded buttons
-                    textTransform: 'none', // Prevent uppercase by default
-                    padding: '10px 20px',
-                },
-            },
-        },
-        MuiTextField: {
-            styleOverrides: {
-                root: {
-                    '& .MuiOutlinedInput-root': {
-                        borderRadius: 15, // Rounded input fields
-                        backgroundColor: '#fff',
-                    },
-                    '& .MuiOutlinedInput-notchedOutline': {
-                        borderColor: '#ccc', // Lighter border for inputs
-                    },
-                    '&:hover .MuiOutlinedInput-notchedOutline': {
-                        borderColor: '#888',
-                    },
-                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                        borderColor: '#1976d2', // Primary color on focus
-                    },
-                },
-            },
-        },
-        MuiList: {
-            styleOverrides: {
-                root: {
-                    borderRadius: 15, // Rounded corners for the list container
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.08)', // Soft shadow
-                    overflow: 'hidden', // Ensures rounded corners apply correctly
-                },
-            },
-        },
-        MuiListItem: {
-            styleOverrides: {
-                root: {
-                    padding: '12px 20px', // More padding for list items
-                    borderBottom: '1px solid #f0f0f0', // Light separator
-                    '&:last-child': {
-                        borderBottom: 'none', // No border on the last item
-                    },
-                    '&.Mui-selected': { // Style for potentially selected items
-                        backgroundColor: 'rgba(25, 118, 210, 0.08)', // Light blue tint
-                    },
-                    '&:hover': {
-                        backgroundColor: 'rgba(0,0,0,0.03)', // Subtle hover effect
-                    },
-                },
-            },
-        },
-        MuiCheckbox: {
-            styleOverrides: {
-                root: {
-                    padding: '9px', // Adjust padding for checkbox
-                },
-            },
-        },
-        MuiIconButton: {
-            styleOverrides: {
-                root: {
-                    '&:hover': {
-                        backgroundColor: 'rgba(220,0,78,0.05)', // Subtle hover for delete icon
-                    },
-                },
-            },
-        },
-    },
-});
+    // Backgrounds
+    pageBg:     '#f0f4f8',
+    cardBg:     '#ffffff',
+    inputBg:    '#f7fafc',
 
-export default theme;
+    // Priority
+    high:       { text: '#c0392b', bg: '#fdf0ef', border: '#f5c6c2', dot: '🔴' },
+    medium:     { text: '#d68910', bg: '#fef9e7', border: '#fdeaa0', dot: '🟡' },
+    low:        { text: '#1e8449', bg: '#eafaf1', border: '#a9dfbf', dot: '🟢' },
+
+    // UI
+    textPrimary:   '#384959',
+    textSecondary: '#6A89A7',
+    textMuted:     '#9ab0c4',
+    border:        '#d4e6f1',
+    borderFocus:   '#88BDF2',
+    shadow:        'rgba(56, 73, 89, 0.08)',
+    shadowMd:      'rgba(56, 73, 89, 0.14)',
+  },
+
+  radius: {
+    sm:  '6px',
+    md:  '10px',
+    lg:  '14px',
+    xl:  '20px',
+    full:'9999px',
+  },
+
+  font: {
+    sans: "'Inter', 'Segoe UI', system-ui, sans-serif",
+  }
+};
+
+export const PRIORITIES = {
+  high:   { label: 'High',   ...theme.colors.high },
+  medium: { label: 'Medium', ...theme.colors.medium },
+  low:    { label: 'Low',    ...theme.colors.low },
+};
